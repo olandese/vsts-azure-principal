@@ -9,18 +9,17 @@
     [Parameter(Mandatory=$true, HelpMessage="Provide a password for SPN application that you would create")]
     [string] $password,
 
-    [Parameter(Mandatory=$true, HelpMessage="The ResourceGroup Name to apply the role")]
-    [string[]] $resourceGroupNames,
-
     [Parameter(Mandatory=$false, HelpMessage="Provide a SPN role assignment")]
-    [string] $spnRole = "owner"
+    [string] $spnRole = "contributor",
+
+    [Parameter(Mandatory=$false, HelpMessage="The ResourceGroup Name to apply the role")]
+    [string[]] $resourceGroupNames
 
 )
 
 #Initialize
 $ErrorActionPreference = "Stop"
 $VerbosePreference = "SilentlyContinue"
-$newguid = [guid]::NewGuid()
 $displayName = [String]::Format("VSTS.{0}", $applicationName)
 $homePage = "http://" + $displayName
 $identifierUri = $homePage
@@ -80,33 +79,36 @@ else
     Start-Sleep 20
 }
 
-
-foreach ($resourceGroupName in $resourceGroupNames)
+# Add the principal role to the Resource Groups (if provided)
+if ($resourceGroupNames)
 {
-    $rg = Get-AzureRmResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue 
-
-    if ([String]::IsNullOrEmpty($rg) -eq $true)
+    foreach ($resourceGroupName in $resourceGroupNames)
     {
-        Write-Output "The ResourceGroup $resourceGroupName was NOT found, skipping role assignment for this ResourceGroup..."
-        continue
-    }
+        $rg = Get-AzureRmResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue 
 
-    # Check if the role is already assigned
-    # If I use the parameter ResourceGroupName, it's not working correctly, it seems to apply a "like" search, so if I have
-    # two resourceGroups, i.e. : Test and Test1, the "Get-AzureRmRoleAssignment -ResourceGroupName Test1" is getting both the roles for Test and Test1,
-    # that's why I am using a where filtering
-    $role = Get-AzureRmRoleAssignment -ServicePrincipalName $appId -RoleDefinitionName owner | where {$_.Scope -eq [String]::Format("/subscriptions/{0}/resourceGroups/{1}", $id, $resourceGroupName)}
+        if ([String]::IsNullOrEmpty($rg) -eq $true)
+        {
+            Write-Output "The ResourceGroup $resourceGroupName was NOT found, skipping role assignment for this ResourceGroup..."
+            continue
+        }
 
-    if (![String]::IsNullOrEmpty($role) -eq $true)
-    {
-        Write-Output "The AAD Appication Principal already has the role $spnRole assigned to ResourceGroup $resourceGroupName, skipping role assignment..."
-    }
-    else
-    {
-        # Assign role to SPN on the provided ResourceGroup Name
-        Write-Output "Assigning role $spnRole to SPN App $appId and ResourceGroup $resourceGroupName" -Verbose
-        New-AzureRmRoleAssignment -RoleDefinitionName $spnRole -ServicePrincipalName $appId -ResourceGroupName $resourceGroupName
-        Write-Output "SPN role assignment completed successfully" -Verbose
+        # Check if the role is already assigned
+        # If I use the parameter ResourceGroupName, it's not working correctly, it seems to apply a "like" search, so if I have
+        # two resourceGroups, i.e. : Test and Test1, the "Get-AzureRmRoleAssignment -ResourceGroupName Test1" is getting both the roles for Test and Test1,
+        # that's why I am using a where filtering
+        $role = Get-AzureRmRoleAssignment -ServicePrincipalName $appId -RoleDefinitionName $spnRole | where {$_.Scope -eq [String]::Format("/subscriptions/{0}/resourceGroups/{1}", $id, $resourceGroupName)}
+
+        if (![String]::IsNullOrEmpty($role) -eq $true)
+        {
+            Write-Output "The AAD Appication Principal already has the role $spnRole assigned to ResourceGroup $resourceGroupName, skipping role assignment..."
+        }
+        else
+        {
+            # Assign role to SPN to the provided ResourceGroup
+            Write-Output "Assigning role $spnRole to SPN App $appId and ResourceGroup $resourceGroupName" -Verbose
+            New-AzureRmRoleAssignment -RoleDefinitionName $spnRole -ServicePrincipalName $appId -ResourceGroupName $resourceGroupName
+            Write-Output "SPN role assignment completed successfully" -Verbose
+        }
     }
 }
 

@@ -1,20 +1,38 @@
 ﻿param
 (
-    [Parameter(Mandatory=$true, HelpMessage="Enter Azure Subscription name. You need to be Subscription Admin to execute the script")]
+    [Parameter(HelpMessage="Enter Azure Subscription name. You need to be Subscription Admin to execute the script")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $subscriptionName,
 
-    [Parameter(Mandatory=$true, HelpMessage="Provide a name for the SPN that you would create")]
+    [Parameter(HelpMessage="Provide a name for the SPN that you would create")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $applicationName,
 
-    [Parameter(Mandatory=$true, HelpMessage="Provide a password for SPN application that you would create")]
+    [Parameter(HelpMessage="Provide a password for SPN application that you would create")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $password,
 
+    [Parameter(HelpMessage="The ResourceGroup Name to apply the role")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
+    [string[]] $resourceGroupNames,
+
+    [Parameter(HelpMessage="Create the Resource Groups if they not exists")]    
+    [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
+    [switch] $createReasourceGroups,
+
+    [Parameter(HelpMessage="The location to create the Resource Groups")] 
+    [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]   
+    [string] $location,
+
     [Parameter(Mandatory=$false, HelpMessage="Provide a SPN role assignment")]
-    [string] $spnRole = "contributor",
-
-    [Parameter(Mandatory=$false, HelpMessage="The ResourceGroup Name to apply the role")]
-    [string[]] $resourceGroupNames
-
+    [string] $spnRole = "contributor"
 )
 
 #Initialize
@@ -84,12 +102,20 @@ if ($resourceGroupNames)
 {
     foreach ($resourceGroupName in $resourceGroupNames)
     {
-        $rg = Get-AzureRmResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue 
+        $rg = Get-AzureRmResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue         
 
         if ([String]::IsNullOrEmpty($rg) -eq $true)
         {
-            Write-Output "The ResourceGroup $resourceGroupName was NOT found, skipping role assignment for this ResourceGroup..."
-            continue
+            if ($createReasourceGroups)
+            {
+                Write-Output "The ResourceGroup $resourceGroupName was NOT found, CREATING it..."
+                New-AzureRmResourceGroup -Name $resourceGroupName -Location $location
+            }
+            else
+            {
+                Write-Output "The ResourceGroup $resourceGroupName was NOT found, skipping role assignment for this ResourceGroup..."
+                continue
+            }
         }
 
         # Check if the role is already assigned

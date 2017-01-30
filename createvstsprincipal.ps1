@@ -7,15 +7,15 @@
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $subscriptionName,
 
-    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(HelpMessage="Provide a name for the SPN that you would create")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $applicationName,
 
-    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(HelpMessage="Provide a password for SPN application that you would create")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]

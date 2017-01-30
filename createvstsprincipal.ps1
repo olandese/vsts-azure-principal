@@ -1,17 +1,20 @@
 ﻿param
 (
     [Parameter(HelpMessage="Enter Azure Subscription name. You need to be Subscription Admin to execute the script")]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $subscriptionName,
 
+    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(HelpMessage="Provide a name for the SPN that you would create")]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
     [string] $applicationName,
 
+    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(HelpMessage="Provide a password for SPN application that you would create")]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
@@ -32,7 +35,11 @@
     [string] $location,
 
     [Parameter(Mandatory=$false, HelpMessage="Provide a SPN role assignment")]
-    [string] $spnRole = "contributor"
+    [string] $spnRole = "contributor",
+
+    [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
+    [Parameter(HelpMessage="Grant the role on the whole subscription")]
+    [switch] $grantRoleOnSubscriptionLevel
 )
 
 #Initialize
@@ -136,6 +143,14 @@ if ($resourceGroupNames)
             Write-Output "SPN role assignment completed successfully" -Verbose
         }
     }
+}
+
+if ($grantRoleOnSubscriptionLevel)
+{
+    # Assign role to SPN to the whole subscription
+    Write-Output "Assigning role $spnRole to SPN App $appId for subscription $subscriptionName" -Verbose
+    New-AzureRmRoleAssignment -RoleDefinitionName $spnRole -ServicePrincipalName $appId 
+    Write-Output "SPN role assignment completed successfully" -Verbose
 }
 
 

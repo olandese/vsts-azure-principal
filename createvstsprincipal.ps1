@@ -28,7 +28,7 @@
 
     [Parameter(HelpMessage="Create the Resource Groups if they not exists")]    
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
-    [switch] $createReasourceGroups,
+    [switch] $createResourceGroups,
 
     [Parameter(HelpMessage="The location to create the Resource Groups")] 
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]   
@@ -113,7 +113,7 @@ if ($resourceGroupNames)
 
         if ([String]::IsNullOrEmpty($rg) -eq $true)
         {
-            if ($createReasourceGroups)
+            if ($createResourceGroups)
             {
                 Write-Output "The ResourceGroup $resourceGroupName was NOT found, CREATING it..."
                 New-AzureRmResourceGroup -Name $resourceGroupName -Location $location

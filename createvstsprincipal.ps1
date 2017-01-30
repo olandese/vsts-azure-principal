@@ -4,21 +4,21 @@
     [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
-    [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalOnly", Mandatory=$true)]
     [string] $subscriptionName,
 
     [Parameter(HelpMessage="Provide a name for the SPN that you would create")]
     [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
-    [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalOnly", Mandatory=$true)]
     [string] $applicationName,
 
     [Parameter(HelpMessage="Provide a password for SPN application that you would create")]
     [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
-    [Parameter(ParameterSetName="CreateVSTSPrincipalWithoutResourceGroups", Mandatory=$true)]
+    [Parameter(ParameterSetName="CreateVSTSPrincipalOnly", Mandatory=$true)]
     [string] $password,
 
     [Parameter(HelpMessage="The ResourceGroup Name to apply the role")]
@@ -61,7 +61,7 @@ if ([String]::IsNullOrEmpty($isAzureModulePresent) -eq $true)
 
 Import-Module -Name AzureRM.Profile
 Write-Output "Provide your credentials to access Azure subscription $subscriptionName" -Verbose
-Login-AzureRmAccount -SubscriptionName $subscriptionName
+#Login-AzureRmAccount -SubscriptionName $subscriptionName
 $azureSubscription = Get-AzureRmSubscription -SubscriptionName $subscriptionName
 $tenantId = $azureSubscription.TenantId
 $id = $azureSubscription.SubscriptionId

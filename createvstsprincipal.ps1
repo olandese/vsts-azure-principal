@@ -129,6 +129,7 @@ if ($resourceGroupNames)
         # If I use the parameter ResourceGroupName, it's not working correctly, it seems to apply a "like" search, so if I have
         # two resourceGroups, i.e. : Test and Test1, the "Get-AzureRmRoleAssignment -ResourceGroupName Test1" is getting both the roles for Test and Test1,
         # that's why I am using a where filtering
+        # I have submitted an issue about this, see: https://github.com/Azure/azure-powershell/issues/3414
         $role = Get-AzureRmRoleAssignment -ServicePrincipalName $appId -RoleDefinitionName $spnRole | where {$_.Scope -eq [String]::Format("/subscriptions/{0}/resourceGroups/{1}", $id, $resourceGroupName)}
 
         if (![String]::IsNullOrEmpty($role) -eq $true)

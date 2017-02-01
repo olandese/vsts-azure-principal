@@ -61,7 +61,7 @@ if ([String]::IsNullOrEmpty($isAzureModulePresent) -eq $true)
 
 Import-Module -Name AzureRM.Profile
 Write-Output "Provide your credentials to access Azure subscription $subscriptionName" -Verbose
-#Login-AzureRmAccount -SubscriptionName $subscriptionName
+Login-AzureRmAccount -SubscriptionName $subscriptionName
 $azureSubscription = Get-AzureRmSubscription -SubscriptionName $subscriptionName
 $tenantId = $azureSubscription.TenantId
 $id = $azureSubscription.SubscriptionId

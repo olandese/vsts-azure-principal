@@ -42,7 +42,7 @@
     [switch] $grantRoleOnSubscriptionLevel,
 
     [Parameter(HelpMessage="The prefix voor de Application Name", Mandatory=$false)]
-    [string]$applicationNamePrefix = "VSTS."
+    [string] $applicationNamePrefix = "VSTS."
 )
 
 #Initialize

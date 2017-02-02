@@ -39,13 +39,16 @@
 
     [Parameter(ParameterSetName="CreateVSTSPrincipalSubscriptionLevel", Mandatory=$true)]
     [Parameter(HelpMessage="Grant the role on the whole subscription")]
-    [switch] $grantRoleOnSubscriptionLevel
+    [switch] $grantRoleOnSubscriptionLevel,
+
+    [Parameter(HelpMessage="The prefix voor de Application Name", Mandatory=$false)]
+    [string]$applicationNamePrefix = "VSTS."
 )
 
 #Initialize
 $ErrorActionPreference = "Stop"
 $VerbosePreference = "SilentlyContinue"
-$displayName = [String]::Format("VSTS.{0}", $applicationName)
+$displayName = [String]::Format("$applicationNamePrefix{0}", $applicationName)
 $homePage = "http://" + $displayName
 $identifierUri = $homePage
 

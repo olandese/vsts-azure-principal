@@ -2,6 +2,8 @@
 
 See my [blog post](http://blog.olandese.nl/2017/01/30/a-better-way-and-script-to-add-a-service-principal-in-azure-for-vsts/)
 
+*NOTE: If the principal (application name) already exists then the password will not be updated.*
+
 ## Parameters Sets examples
 
 ### CreateVSTSPrincipalOnly

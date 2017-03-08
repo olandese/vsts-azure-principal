@@ -37,3 +37,10 @@ Create an Azure AD Application/Principal and grants the Role at subscription lev
 ``` powershell
 .\createvstsprincipal.ps1 -subscriptionName "The Subscription Name" -applicationName "TheApplicationName" -password "ThePassword" -grantRoleOnSubscriptionLevel
 ```
+### Password expiration
+
+The default value for the password expiration is 1/1/2099 1:00 AM, you can provide another value like this (in the following example I'm using the CreateVSTSPrincipalOnly paramter set, you can use it with all the calls) : 
+
+```powershell
+.\createvstsprincipal.ps1 -subscriptionName "The Subscription Name" -applicationName "TheApplicationName" -password "ThePassword" -passwordExpirationDateTime (Get-Date "1/1/2020 1:00 AM")
+```

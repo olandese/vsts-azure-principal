@@ -26,6 +26,9 @@
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [string[]] $resourceGroupNames,
 
+    [Parameter(HelpMessage="The names of the Azure Active Directory Groups that should have access")]
+    [string[]] $adGroupNames,
+
     [Parameter(HelpMessage="Create the Resource Groups if they not exists")]    
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [switch] $createResourceGroups,
@@ -153,6 +156,34 @@ if ($resourceGroupNames)
             Write-Output "Assigning role $spnRole to SPN App $appId and ResourceGroup $resourceGroupName" -Verbose
             New-AzureRmRoleAssignment -RoleDefinitionName $spnRole -ServicePrincipalName $appId -ResourceGroupName $resourceGroupName
             Write-Output "SPN role assignment completed successfully" -Verbose
+        }
+
+        if ($adGroupNames)
+        {
+            foreach ($adGroupName in $adGroupNames)
+            {  
+                $adGroup = Get-AzureRmADGroup -SearchString $adGroupName
+                if ([String]::IsNullOrEmpty($adGroup) -eq $true)
+                {
+                    Write-Output "The AAD Group $adGroupName Cannot be found. Due to this, skipping the role assignment"
+                }
+                else
+                {
+                    $adGroupAssignment = Get-AzureRmRoleAssignment -ObjectId $adGroup.Id -ResourceGroupName $resourceGroupName | where {$_.Scope -eq [String]::Format("/subscriptions/{0}/resourceGroups/{1}", $id, $resourceGroupName)}
+                    $adGroupAssignment
+                    if (![String]::IsNullOrEmpty($adGroupAssignment) -eq $true)
+                    {
+                        Write-Output "The AAD Group $adGroupName is already assigned to ResourceGroup $resourceGroupName, skipping role assignment..."
+                    }
+                    else
+                    {
+                        # Assign role to ad group to the provided ResourceGroup
+                        Write-Output "Assigning role $adGroupName the RoleDefinition $spnRole on ResourceGroup $resourceGroupName" -Verbose
+                        New-AzureRmRoleAssignment -ObjectId $adGroup.Id -ResourceGroupName $resourceGroupName -RoleDefinitionName $spnRole
+                        Write-Output "Ad Group assignment completed successfully" -Verbose
+                    }
+                }
+            }
         }
     }
 }

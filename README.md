@@ -30,6 +30,14 @@ Create an Azure AD Application/Principal and the specified Resource Groups at th
 .\createvstsprincipal.ps1 -subscriptionName "The Subscription Name" -applicationName "TheApplicationName" -password "ThePassword" -resourceGroupNames "ResourceGroupName1","ResourceGroupName2","etc" -createResourceGroups -location "West Europe"
 ```
 
+### CreateVSTSPrincipalAndResourceGroups with Active Directory Groups
+
+Create an Azure AD Application/Principal and the specified Resource Groups at the provided location, grants the Role to the Resource Groups. Also grants the AD groups to the Resource Groups:
+
+``` powershell
+.\createvstsprincipal.ps1 -subscriptionName "The Subscription Name" -applicationName "TheApplicationName" -password "ThePassword" -resourceGroupNames "ResourceGroupName1","ResourceGroupName2","etc" -adGroupNames "AdGroupName1", "AdGroupName2", "etc" -createResourceGroups -location "West Europe"
+```
+
 ### CreateVSTSPrincipalSubscriptionLevel
 
 Create an Azure AD Application/Principal and grants the Role at subscription level:

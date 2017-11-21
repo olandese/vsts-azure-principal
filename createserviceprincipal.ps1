@@ -66,12 +66,17 @@ if ([String]::IsNullOrEmpty($isAzureModulePresent) -eq $true)
 
 
 Import-Module -Name AzureRM.Profile
-Write-Output "Provide your credentials to access Azure subscription $subscriptionName" -Verbose
-Login-AzureRmAccount -SubscriptionName $subscriptionName
+
+#When not already logged in, login
+if (((get-azurermcontext).Account) -eq $null)
+{
+	Write-Output "Provide your credentials to access Azure subscription $subscriptionName" -Verbose	
+	Login-AzureRmAccount -subscriptionname $subscriptionName
+}
+
 $azureSubscription = Get-AzureRmSubscription -SubscriptionName $subscriptionName
 $tenantId = $azureSubscription.TenantId
-$id = $azureSubscription.SubscriptionId
-
+$id = $azureSubscription.Id
 
 #Check if the application already exists
 $app = Get-AzureRmADApplication -IdentifierUri $homePage
@@ -107,7 +112,7 @@ else
     Write-Output "SPN creation completed successfully (SPN Name: $spnName)" -Verbose
     
     Write-Output "Waiting for SPN creation to reflect in Directory before Role assignment"
-    Start-Sleep 20
+    Start-Sleep 30
 }
 
 # Add the principal role to the Resource Groups (if provided)

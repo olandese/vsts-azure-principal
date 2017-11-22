@@ -19,7 +19,7 @@
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalOnly", Mandatory=$true)]
-    [string] $password,
+    [System.Security.SecureString] $password,
 
     [Parameter(HelpMessage="The ResourceGroup Name to apply the role")]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]

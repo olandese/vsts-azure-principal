@@ -19,12 +19,15 @@
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalOnly", Mandatory=$true)]
-    [string] $password,
+    [System.Security.SecureString] $password,
 
     [Parameter(HelpMessage="The ResourceGroup Name to apply the role")]
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
     [Parameter(ParameterSetName="CreateVSTSPrincipalWithExistingResourceGroups", Mandatory=$true)]
     [string[]] $resourceGroupNames,
+
+    [Parameter(HelpMessage="The names of the Azure Active Directory Groups that should have access")]
+    [string[]] $adGroupNames,
 
     [Parameter(HelpMessage="Create the Resource Groups if they not exists")]    
     [Parameter(ParameterSetName="CreateVSTSPrincipalAndResourceGroups", Mandatory=$true)]
@@ -66,12 +69,17 @@ if ([String]::IsNullOrEmpty($isAzureModulePresent) -eq $true)
 
 
 Import-Module -Name AzureRM.Profile
-Write-Output "Provide your credentials to access Azure subscription $subscriptionName" -Verbose
-Login-AzureRmAccount -SubscriptionName $subscriptionName
+
+#When not already logged in, login
+if (((get-azurermcontext).Account) -eq $null)
+{
+	Write-Output "Provide your credentials to access Azure subscription $subscriptionName" -Verbose	
+	Login-AzureRmAccount -subscriptionname $subscriptionName
+}
+
 $azureSubscription = Get-AzureRmSubscription -SubscriptionName $subscriptionName
 $tenantId = $azureSubscription.TenantId
-$id = $azureSubscription.SubscriptionId
-
+$id = $azureSubscription.Id
 
 #Check if the application already exists
 $app = Get-AzureRmADApplication -IdentifierUri $homePage
@@ -107,7 +115,7 @@ else
     Write-Output "SPN creation completed successfully (SPN Name: $spnName)" -Verbose
     
     Write-Output "Waiting for SPN creation to reflect in Directory before Role assignment"
-    Start-Sleep 20
+    Start-Sleep 30
 }
 
 # Add the principal role to the Resource Groups (if provided)
@@ -148,6 +156,34 @@ if ($resourceGroupNames)
             Write-Output "Assigning role $spnRole to SPN App $appId and ResourceGroup $resourceGroupName" -Verbose
             New-AzureRmRoleAssignment -RoleDefinitionName $spnRole -ServicePrincipalName $appId -ResourceGroupName $resourceGroupName
             Write-Output "SPN role assignment completed successfully" -Verbose
+        }
+
+        if ($adGroupNames)
+        {
+            foreach ($adGroupName in $adGroupNames)
+            {  
+                $adGroup = Get-AzureRmADGroup -SearchString $adGroupName
+                if ([String]::IsNullOrEmpty($adGroup) -eq $true)
+                {
+                    Write-Output "The AAD Group $adGroupName Cannot be found. Due to this, skipping the role assignment"
+                }
+                else
+                {
+                    $adGroupAssignment = Get-AzureRmRoleAssignment -ObjectId $adGroup.Id -ResourceGroupName $resourceGroupName | where {$_.Scope -eq [String]::Format("/subscriptions/{0}/resourceGroups/{1}", $id, $resourceGroupName)}
+                    $adGroupAssignment
+                    if (![String]::IsNullOrEmpty($adGroupAssignment) -eq $true)
+                    {
+                        Write-Output "The AAD Group $adGroupName is already assigned to ResourceGroup $resourceGroupName, skipping role assignment..."
+                    }
+                    else
+                    {
+                        # Assign role to ad group to the provided ResourceGroup
+                        Write-Output "Assigning role $adGroupName the RoleDefinition $spnRole on ResourceGroup $resourceGroupName" -Verbose
+                        New-AzureRmRoleAssignment -ObjectId $adGroup.Id -ResourceGroupName $resourceGroupName -RoleDefinitionName $spnRole
+                        Write-Output "Ad Group assignment completed successfully" -Verbose
+                    }
+                }
+            }
         }
     }
 }
